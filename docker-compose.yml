@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: ${SQL_CONTAINER_NAME:-sqlserver2022}
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${SQL_PASSWORD}
+      - MSSQL_PID=Developer
+      - TZ=America/Sao_Paulo
+    ports:
+      - "${SQL_PORT}:1433"
+    volumes:
+      - ${SQL_DATA_PATH}:/var/opt/mssql/data
+      - ${SQL_BACKUP_PATH}:/var/opt/mssql/backup
+    restart: unless-stopped
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P ${SQL_PASSWORD} -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 30s  # Increased start period
+
+volumes:
+  sqlserver_data:
+    driver: local
